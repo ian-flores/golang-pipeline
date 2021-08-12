@@ -1,0 +1,36 @@
+name: Dockerhub release process
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_locally: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v1
+        with:
+          go-version: '1.16.6'
+      - run: go build
+  dockerhub_push:
+    runs-on: ubuntu-latest
+    needs: build_locally
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME}}
+          password: ${{ secrets.DOCKERHUB_PASSWORD}}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: "latest"
+          
+
+      
